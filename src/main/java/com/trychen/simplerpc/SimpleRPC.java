@@ -6,6 +6,8 @@ import com.trychen.simplerpc.network.BroadcastingClient;
 import com.trychen.simplerpc.network.BroadcastingServer;
 import com.trychen.simplerpc.framework.devices.DeviceManager;
 
+import java.net.InetAddress;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class SimpleRPC {
@@ -14,6 +16,7 @@ public class SimpleRPC {
     public static boolean STARTED = false;
     public static int BUFFER_SIZE = 4196;
     public static int PORT = 25540;
+    public static InetAddress[] BROADCAST_ADDRESS;
     public static String CUSTOM_NAME;
     public static BroadcastingServer SERVER;
     public static Thread THREAD;

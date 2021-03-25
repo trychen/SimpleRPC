@@ -36,13 +36,16 @@ public class BroadcastingClient {
         output.write(data);
 
         byte[] message = byteArrayOutputStream.toByteArray();
-        listAllBroadcastAddresses().forEach(address -> {
-            try {
-                rawBroadcast(address, message);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+
+        if (SimpleRPC.BROADCAST_ADDRESS == null) {
+            SimpleRPC.BROADCAST_ADDRESS = listAllBroadcastAddresses().toArray(new InetAddress[0]);
+        }
+
+        for (InetAddress address : SimpleRPC.BROADCAST_ADDRESS) try {
+            rawBroadcast(address, message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void rawBroadcast(InetAddress address, byte[] raw) throws IOException {
