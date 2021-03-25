@@ -52,23 +52,27 @@ public class BroadcastingClient {
         ds.close();
     }
 
-    public static List<InetAddress> listAllBroadcastAddresses() throws SocketException {
-        List<InetAddress> broadcastList = new ArrayList<>();
-        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface networkInterface = interfaces.nextElement();
+    public static List<InetAddress> listAllBroadcastAddresses() throws UnknownHostException {
+        try {
+            List<InetAddress> broadcastList = new ArrayList<>();
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
 
-            if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                continue;
+                if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                    continue;
+                }
+
+                networkInterface.getInterfaceAddresses().stream()
+                        .map(InterfaceAddress::getBroadcast)
+                        .filter(Objects::nonNull)
+                        .forEach(broadcastList::add);
             }
 
-            networkInterface.getInterfaceAddresses().stream()
-                    .map(InterfaceAddress::getBroadcast)
-                    .filter(Objects::nonNull)
-                    .forEach(broadcastList::add);
+            return broadcastList;
+        } catch (Exception e) {
+            return Collections.singletonList(InetAddress.getByName("255.255.255.255"));
         }
-
-        return broadcastList;
     }
 
     public static String buildSenderName() {
