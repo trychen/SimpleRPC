@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+sourceCompatibility = 1.8
+
+group 'com.trychen'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+
+configurations {
+    embed
+    compile.extendsFrom(embed)
+}
+
+dependencies {
+    compile("com.google.guava:guava:30.1.1-jre")
+    compile('com.google.code.gson:gson:2.8.6')
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+
+    embed "com.github.trychen:ByteDataStream:1.6"
+    embed "com.github.Mouse0w0:FastReflection:1.0.1"
+}
+
+jar {
+    from configurations.embed.collect { it.isDirectory() ? it : zipTree(it) }
+}
