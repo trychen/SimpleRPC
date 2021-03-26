@@ -3,6 +3,7 @@ package com.trychen.simplerpc.network;
 import com.trychen.simplerpc.SimpleRPC;
 import com.trychen.simplerpc.framework.MessagePackageInfo;
 import com.trychen.simplerpc.util.DataUtil;
+import com.trychen.simplerpc.util.GZIPUtils;
 import com.trychen.simplerpc.util.JsonUtil;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -13,7 +14,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static com.trychen.simplerpc.SimpleRPC.singlePartSize;
+import static com.trychen.simplerpc.SimpleRPC.SINGLE_PART_SIZE;
 
 public class BroadcastingClient {
     public static void broadcast(String channel, byte[] data) {
@@ -26,17 +27,17 @@ public class BroadcastingClient {
     }
 
     public static void broadcast(MessagePackageInfo object, byte[] data) throws IOException {
-        ;
-        if (data.length > singlePartSize) {
+        if (SimpleRPC.GZIP) data = GZIPUtils.compress(data);
+        if (data.length > SINGLE_PART_SIZE) {
             // 写头部
-            object.setParts((data.length / singlePartSize) + (data.length % singlePartSize > 0 ? 1 : 0));
+            object.setParts((data.length / SINGLE_PART_SIZE) + (data.length % SINGLE_PART_SIZE > 0 ? 1 : 0));
 
             for (Integer i = 0; i < object.getParts(); i++) {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(SimpleRPC.BUFFER_SIZE);
                 DataOutputStream output = new DataOutputStream(byteArrayOutputStream);
 
                 object.setNumberOfPart(i);
-                byte[] subPartData = ArrayUtils.subarray(data, i * singlePartSize, Math.min(data.length, (i + 1) * singlePartSize));
+                byte[] subPartData = ArrayUtils.subarray(data, i * SINGLE_PART_SIZE, Math.min(data.length, (i + 1) * SINGLE_PART_SIZE));
 
                 String header = JsonUtil.getGeneralGson().toJson(object);
                 DataUtil.writeVarInt(output, header.length());
@@ -47,8 +48,6 @@ public class BroadcastingClient {
                 output.write(subPartData);
 
                 byte[] message = byteArrayOutputStream.toByteArray();
-
-                System.out.println(message.length);
 
                 if (SimpleRPC.BROADCAST_ADDRESS == null) {
                     SimpleRPC.BROADCAST_ADDRESS = listAllBroadcastAddresses().toArray(new InetAddress[0]);

@@ -7,6 +7,7 @@ import com.trychen.simplerpc.framework.MultiPartPackage;
 import com.trychen.simplerpc.framework.RPCManager;
 import com.trychen.simplerpc.framework.RawMessageListener;
 import com.trychen.simplerpc.util.DataUtil;
+import com.trychen.simplerpc.util.GZIPUtils;
 import com.trychen.simplerpc.util.JsonUtil;
 
 import java.io.ByteArrayInputStream;
@@ -54,9 +55,12 @@ public class BroadcastingServer implements Runnable {
                     MultiPartPackage partPackage = multiPartPackages.computeIfAbsent(packageInfo.getId(), key -> new MultiPartPackage(packageInfo));
 
                     partPackage.accept(packageInfo, dataBuf);
+
                     if (partPackage.isComplete()) {
                         multiPartPackages.remove(packageInfo.getId());
                         byte[] completeData = partPackage.getBytes();
+
+                        if (SimpleRPC.GZIP) completeData = GZIPUtils.uncompress(completeData);
 
                         for (RawMessageListener listener : listeners) {
                             listener.on(packageInfo, completeData);
@@ -65,6 +69,8 @@ public class BroadcastingServer implements Runnable {
                         RPCManager.receive(packageInfo, completeData);
                     }
                 } else {
+                    if (SimpleRPC.GZIP) dataBuf = GZIPUtils.uncompress(dataBuf);
+
                     for (RawMessageListener listener : listeners) {
                         listener.on(packageInfo, dataBuf);
                     }

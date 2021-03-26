@@ -1,5 +1,8 @@
 package com.trychen.simplerpc.framework;
 
+import com.trychen.simplerpc.SimpleRPC;
+import com.trychen.simplerpc.util.GZIPUtils;
+
 public class MultiPartPackage {
     private MessagePackageInfo info;
     private byte[][] allParts;
@@ -33,6 +36,7 @@ public class MultiPartPackage {
             System.arraycopy(packet, 0, bytes, cursor, packet.length);
             cursor += packet.length;
         }
+
         return bytes;
     }
 }

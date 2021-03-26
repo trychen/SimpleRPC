@@ -2,6 +2,7 @@ package com.trychen.simplerpc.framework;
 
 import com.trychen.simplerpc.SimpleRPC;
 import com.trychen.simplerpc.annotation.RPC;
+import com.trychen.simplerpc.framework.persistence.ByteStreamPersistence;
 import com.trychen.simplerpc.framework.persistence.Persistence;
 import com.trychen.simplerpc.network.BroadcastingClient;
 
@@ -24,7 +25,7 @@ public enum RPCProxy implements InvocationHandler {
         if (rpc == null) return null;
         String channel = rpc.value();
 
-        Persistence persistence = RPCManager.getPersistence(rpc.persistence());
+        Persistence persistence = rpc.fast() ? ByteStreamPersistence.INSTANCE : RPCManager.getPersistence(rpc.persistence());
         byte[] bytes = persistence.serialize(args, method.getGenericParameterTypes());
 
         BroadcastingClient.broadcast(channel, bytes);
