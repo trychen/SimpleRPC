@@ -4,6 +4,7 @@ import com.trychen.simplerpc.SimpleRPC;
 import com.trychen.simplerpc.framework.MessagePackageInfo;
 import com.trychen.simplerpc.util.DataUtil;
 import com.trychen.simplerpc.util.JsonUtil;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -11,6 +12,8 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import static com.trychen.simplerpc.SimpleRPC.singlePartSize;
 
 public class BroadcastingClient {
     public static void broadcast(String channel, byte[] data) {
@@ -23,28 +26,63 @@ public class BroadcastingClient {
     }
 
     public static void broadcast(MessagePackageInfo object, byte[] data) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(SimpleRPC.BUFFER_SIZE);
-        DataOutputStream output = new DataOutputStream(byteArrayOutputStream);
+        ;
+        if (data.length > singlePartSize) {
+            // 写头部
+            object.setParts((data.length / singlePartSize) + (data.length % singlePartSize > 0 ? 1 : 0));
 
-        // 写头部
-        String header = JsonUtil.getGeneralGson().toJson(object);
-        DataUtil.writeVarInt(output, header.length());
-        output.write(header.getBytes(StandardCharsets.UTF_8));
+            for (Integer i = 0; i < object.getParts(); i++) {
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(SimpleRPC.BUFFER_SIZE);
+                DataOutputStream output = new DataOutputStream(byteArrayOutputStream);
 
-        // 写数据
-        DataUtil.writeVarInt(output, data.length);
-        output.write(data);
+                object.setNumberOfPart(i);
+                byte[] subPartData = ArrayUtils.subarray(data, i * singlePartSize, Math.min(data.length, (i + 1) * singlePartSize));
 
-        byte[] message = byteArrayOutputStream.toByteArray();
+                String header = JsonUtil.getGeneralGson().toJson(object);
+                DataUtil.writeVarInt(output, header.length());
+                output.write(header.getBytes(StandardCharsets.UTF_8));
 
-        if (SimpleRPC.BROADCAST_ADDRESS == null) {
-            SimpleRPC.BROADCAST_ADDRESS = listAllBroadcastAddresses().toArray(new InetAddress[0]);
-        }
+                // 写数据
+                DataUtil.writeVarInt(output, subPartData.length);
+                output.write(subPartData);
 
-        for (InetAddress address : SimpleRPC.BROADCAST_ADDRESS) try {
-            rawBroadcast(address, message);
-        } catch (IOException e) {
-            e.printStackTrace();
+                byte[] message = byteArrayOutputStream.toByteArray();
+
+                System.out.println(message.length);
+
+                if (SimpleRPC.BROADCAST_ADDRESS == null) {
+                    SimpleRPC.BROADCAST_ADDRESS = listAllBroadcastAddresses().toArray(new InetAddress[0]);
+                }
+
+                for (InetAddress address : SimpleRPC.BROADCAST_ADDRESS) try {
+                    rawBroadcast(address, message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(SimpleRPC.BUFFER_SIZE);
+            DataOutputStream output = new DataOutputStream(byteArrayOutputStream);
+            // 写头部
+            String header = JsonUtil.getGeneralGson().toJson(object);
+            DataUtil.writeVarInt(output, header.length());
+            output.write(header.getBytes(StandardCharsets.UTF_8));
+
+            // 写数据
+            DataUtil.writeVarInt(output, data.length);
+            output.write(data);
+
+            byte[] message = byteArrayOutputStream.toByteArray();
+
+            if (SimpleRPC.BROADCAST_ADDRESS == null) {
+                SimpleRPC.BROADCAST_ADDRESS = listAllBroadcastAddresses().toArray(new InetAddress[0]);
+            }
+
+            for (InetAddress address : SimpleRPC.BROADCAST_ADDRESS) try {
+                rawBroadcast(address, message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

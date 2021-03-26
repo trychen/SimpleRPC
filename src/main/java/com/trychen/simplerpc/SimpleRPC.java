@@ -14,8 +14,9 @@ public class SimpleRPC {
     public static Logger LOG = Logger.getLogger("SimpleRPC");
 
     public static boolean STARTED = false;
-    public static int BUFFER_SIZE = 4196;
+    public static int BUFFER_SIZE = 64 * 1024;
     public static int PORT = 25540;
+    public static int singlePartSize = 1200;
     public static InetAddress[] BROADCAST_ADDRESS;
     public static String CUSTOM_NAME;
     public static BroadcastingServer SERVER;

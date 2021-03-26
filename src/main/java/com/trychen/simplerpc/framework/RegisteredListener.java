@@ -3,6 +3,7 @@ package com.trychen.simplerpc.framework;
 import com.github.mouse0w0.fastreflection.FastReflection;
 import com.github.mouse0w0.fastreflection.MethodAccessor;
 import com.trychen.simplerpc.annotation.RPC;
+import com.trychen.simplerpc.framework.persistence.ByteStreamPersistence;
 import com.trychen.simplerpc.framework.persistence.Persistence;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -26,7 +27,7 @@ public class RegisteredListener {
         this.rpc = rpc;
         this.method = method;
         this.methodAccessor = FastReflection.create(method);
-        this.persistence = RPCManager.getPersistence(rpc.persistence());
+        this.persistence = rpc.fast() ? ByteStreamPersistence.INSTANCE : RPCManager.getPersistence(rpc.persistence());
         this.withMessagePackageInfo = method.getParameterCount() > 0 && MessagePackageInfo.class.isAssignableFrom(method.getParameterTypes()[0]);
         this.actualParameterTypes = withMessagePackageInfo ? ArrayUtils.remove(method.getGenericParameterTypes(), 0) :method.getGenericParameterTypes();
     }

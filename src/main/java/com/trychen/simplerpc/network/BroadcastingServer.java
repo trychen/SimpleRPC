@@ -3,6 +3,7 @@ package com.trychen.simplerpc.network;
 import com.google.common.collect.Sets;
 import com.trychen.simplerpc.SimpleRPC;
 import com.trychen.simplerpc.framework.MessagePackageInfo;
+import com.trychen.simplerpc.framework.MultiPartPackage;
 import com.trychen.simplerpc.framework.RPCManager;
 import com.trychen.simplerpc.framework.RawMessageListener;
 import com.trychen.simplerpc.util.DataUtil;
@@ -18,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BroadcastingServer implements Runnable {
     protected AtomicBoolean closeHook = new AtomicBoolean();
     protected Set<RawMessageListener> listeners = Sets.newConcurrentHashSet();
+    protected Map<UUID, MultiPartPackage> multiPartPackages = new HashMap<>();
 
     @Override
     public void run() {
@@ -48,11 +50,28 @@ public class BroadcastingServer implements Runnable {
 //                System.out.println("收到信息：" + packageInfo.toString());
 //                System.out.println("   长度：" + dataBuf.length);
 
-                for (RawMessageListener listener : listeners) {
-                    listener.on(packageInfo, dataBuf);
-                }
+                if (packageInfo.getParts() != null && packageInfo.getParts() != 1 && packageInfo.getParts() != 0) {
+                    MultiPartPackage partPackage = multiPartPackages.computeIfAbsent(packageInfo.getId(), key -> new MultiPartPackage(packageInfo));
 
-                RPCManager.receive(packageInfo, dataBuf);
+                    partPackage.accept(packageInfo, dataBuf);
+                    if (partPackage.isComplete()) {
+                        multiPartPackages.remove(packageInfo.getId());
+                        byte[] completeData = partPackage.getBytes();
+
+                        for (RawMessageListener listener : listeners) {
+                            listener.on(packageInfo, completeData);
+                        }
+
+                        RPCManager.receive(packageInfo, completeData);
+                    }
+                } else {
+                    for (RawMessageListener listener : listeners) {
+                        listener.on(packageInfo, dataBuf);
+                    }
+
+                    RPCManager.receive(packageInfo, dataBuf);
+
+                }
 
                 if (closeHook.get()) break;
             }

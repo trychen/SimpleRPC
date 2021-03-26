@@ -7,6 +7,8 @@ public class MessagePackageInfo {
     protected String channel;
     protected String sender;
     protected String receiver;
+    protected Integer parts;
+    protected Integer numberOfPart;
 
     public MessagePackageInfo(String channel, String sender, String receiver) {
         this.id = UUID.randomUUID();
@@ -51,13 +53,33 @@ public class MessagePackageInfo {
         return this;
     }
 
+    public Integer getParts() {
+        return parts;
+    }
+
+    public MessagePackageInfo setParts(Integer parts) {
+        this.parts = parts;
+        return this;
+    }
+
+    public Integer getNumberOfPart() {
+        return numberOfPart;
+    }
+
+    public MessagePackageInfo setNumberOfPart(Integer numberOfPart) {
+        this.numberOfPart = numberOfPart;
+        return this;
+    }
+
     @Override
     public String toString() {
-        return "MessagePackage{" +
+        return "MessagePackageInfo{" +
                 "id=" + id +
                 ", channel='" + channel + '\'' +
                 ", sender='" + sender + '\'' +
                 ", receiver='" + receiver + '\'' +
+                ", parts=" + parts +
+                ", numberOfPart=" + numberOfPart +
                 '}';
     }
 }
