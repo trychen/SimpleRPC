@@ -18,6 +18,7 @@ public class SimpleRPC {
     public static int BUFFER_SIZE = 64 * 1024;
     public static int PORT = 25540;
     public static int SINGLE_PART_SIZE = 1200;
+    public static boolean FAST_REFLECTION = true;
 
     public static InetAddress[] BROADCAST_ADDRESS;
     public static String CUSTOM_NAME;
