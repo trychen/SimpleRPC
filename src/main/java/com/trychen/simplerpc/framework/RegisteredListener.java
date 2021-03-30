@@ -30,7 +30,7 @@ public class RegisteredListener {
         this.method = method;
         this.methodAccessor = SimpleRPC.FAST_REFLECTION ? FastReflection.create(method) : new ReflectMethodAccessor(method);
         this.persistence = rpc.fast() ? ByteStreamPersistence.INSTANCE : RPCManager.getPersistence(rpc.persistence());
-        this.withMessagePackageInfo = method.getParameterCount() > 0 && MessagePackageInfo.class.isAssignableFrom(method.getParameterTypes()[0]);
+        this.withMessagePackageInfo = method.getParameterTypes().length > 0 && MessagePackageInfo.class.isAssignableFrom(method.getParameterTypes()[0]);
         this.actualParameterTypes = withMessagePackageInfo ? ArrayUtils.remove(method.getGenericParameterTypes(), 0) :method.getGenericParameterTypes();
     }
 
