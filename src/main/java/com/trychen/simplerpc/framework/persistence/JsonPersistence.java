@@ -15,6 +15,9 @@ public enum JsonPersistence implements Persistence {
 
     @Override
     public byte[] serialize(Object[] objects, Type[] types) throws IOException {
+        if (types.length == 0) {
+            return new byte[0];
+        }
         JsonArray jsonArray = new JsonArray();
 
         for (int i = 0; i < objects.length; i++) {
@@ -30,6 +33,9 @@ public enum JsonPersistence implements Persistence {
 
     @Override
     public Object[] deserialize(byte[] bytes, Type[] types) throws IOException {
+        if (types.length == 0) {
+            return new Object[0];
+        }
         String json = new String(bytes, charset);
         JsonArray jsonArray = new JsonParser().parse(json).getAsJsonArray();
         Object[] objects = new Object[types.length];

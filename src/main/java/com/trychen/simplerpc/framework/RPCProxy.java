@@ -26,7 +26,8 @@ public enum RPCProxy implements InvocationHandler {
         String channel = rpc.value();
 
         Persistence persistence = rpc.fast() ? ByteStreamPersistence.INSTANCE : RPCManager.getPersistence(rpc.persistence());
-        byte[] bytes = persistence.serialize(args, method.getGenericParameterTypes());
+
+        byte[] bytes = persistence.serialize(args == null ? new Object[0] : args, method.getGenericParameterTypes());
 
         BroadcastingClient.broadcast(channel, bytes);
 
