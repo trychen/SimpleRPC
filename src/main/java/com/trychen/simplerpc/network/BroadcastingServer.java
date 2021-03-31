@@ -33,7 +33,7 @@ public class BroadcastingServer implements Runnable {
 
             System.out.println("监听广播端口打开！");
 
-            for (;;) {
+            for (;;) try {
                 DatagramPacket dp = new DatagramPacket(buf, buf.length);
                 ds.receive(dp);
 
@@ -80,6 +80,9 @@ public class BroadcastingServer implements Runnable {
                 }
 
                 if (closeHook.get()) break;
+            } catch (Exception e) {
+                System.err.println("接收包时发送错误！");
+                e.printStackTrace();
             }
 
             ds.close();

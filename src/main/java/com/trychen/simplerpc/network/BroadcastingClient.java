@@ -40,8 +40,9 @@ public class BroadcastingClient {
                 byte[] subPartData = ArrayUtils.subarray(data, i * SINGLE_PART_SIZE, Math.min(data.length, (i + 1) * SINGLE_PART_SIZE));
 
                 String header = JsonUtil.getGeneralGson().toJson(object);
-                DataUtil.writeVarInt(output, header.length());
-                output.write(header.getBytes(StandardCharsets.UTF_8));
+                byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+                DataUtil.writeVarInt(output, headerBytes.length);
+                output.write(headerBytes);
 
                 // 写数据
                 DataUtil.writeVarInt(output, subPartData.length);
@@ -64,8 +65,9 @@ public class BroadcastingClient {
             DataOutputStream output = new DataOutputStream(byteArrayOutputStream);
             // 写头部
             String header = JsonUtil.getGeneralGson().toJson(object);
-            DataUtil.writeVarInt(output, header.length());
-            output.write(header.getBytes(StandardCharsets.UTF_8));
+            byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+            DataUtil.writeVarInt(output, headerBytes.length);
+            output.write(headerBytes);
 
             // 写数据
             DataUtil.writeVarInt(output, data.length);
@@ -116,6 +118,7 @@ public class BroadcastingClient {
     }
 
     public static String buildSenderName() {
+        if (true) return "学在北理W3";
         if (SimpleRPC.CUSTOM_NAME != null) return SimpleRPC.CUSTOM_NAME;
 
         try {
