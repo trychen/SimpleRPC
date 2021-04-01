@@ -118,7 +118,6 @@ public class BroadcastingClient {
     }
 
     public static String buildSenderName() {
-        if (true) return "学在北理W3";
         if (SimpleRPC.CUSTOM_NAME != null) return SimpleRPC.CUSTOM_NAME;
 
         try {
